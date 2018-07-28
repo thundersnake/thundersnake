@@ -67,9 +67,13 @@ func (app *AppServer) Start() error {
 
 	if app.Config.EnableSigHUPReload {
 		app.listenSigHUPReloadConfig()
+	} else {
+		app.Log.Info("Configuration reload on SIGHUP is disabled.")
 	}
 
-	return app.onStartCallBack()
+	ret := app.onStartCallBack()
+	app.Log.Infof("Exiting %s", app.name)
+	return ret
 }
 
 func (app *AppServer) listenSigHUPReloadConfig() {
