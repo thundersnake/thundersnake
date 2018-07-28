@@ -1,4 +1,4 @@
-PROJECT_NAME := bot
+PROJECT_NAME := thundersnake
 REPO_NAME := "gitlab.com/thundersnake/${PROJECT_NAME}"
 PKG_LIST := $(shell go list ${REPO_NAME}/... | grep -v /vendor/)
 
