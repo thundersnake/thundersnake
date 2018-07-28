@@ -19,7 +19,11 @@ func TestNewAppServer(t *testing.T) {
 	assert.Nil(t, NewAppServer("tests", "", nil))
 	assert.Nil(t, NewAppServer("", "test.yml", nil))
 	assert.Nil(t, NewAppServer("", "", nil))
-	assert.NotNil(t, NewAppServer("tests", "test.yml", testCallback))
+
+	a := NewAppServer("tests", "test.yml", testCallback)
+	assert.NotNil(t, a)
+	assert.NotEmpty(t, a.buildDate)
+	assert.NotEmpty(t, a.version)
 }
 
 func TestAppServer_Start(t *testing.T) {

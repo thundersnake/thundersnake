@@ -12,6 +12,9 @@ type LogManager struct {
 	Log  *logging.Logger
 }
 
+// Global singleton for the library
+var gLog *logging.Logger
+
 // InitLogger initialize logger
 func NewLogManager(name string) *LogManager {
 	l := &LogManager{
@@ -22,6 +25,8 @@ func NewLogManager(name string) *LogManager {
 		Log: logging.MustGetLogger(name),
 	}
 
+	// Initiale the singleton
+	gLog = l.Log
 	return l
 }
 

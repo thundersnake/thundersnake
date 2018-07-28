@@ -3,6 +3,9 @@ package thundersnake
 import (
 	"github.com/op/go-logging"
 	"gitlab.com/thundersnake/thundersnake/utils"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // AppServerVersion application version (from git tag)
@@ -18,6 +21,7 @@ type AppServer struct {
 	configPath      string
 	logManager      *LogManager
 	Log             *logging.Logger
+	Config          Config
 	onStartCallBack func() error
 }
 
@@ -27,6 +31,8 @@ func NewAppServer(appName string, configPath string, onStartCallBack func() erro
 		configPath:      configPath,
 		logManager:      NewLogManager(appName),
 		onStartCallBack: onStartCallBack,
+		version:         "[unk]",
+		buildDate:       "[unk]",
 	}
 
 	a.Log = a.logManager.Log
@@ -53,5 +59,30 @@ func (app *AppServer) Start() error {
 		app.Log.Infof("Application is running in a Docker container.")
 	}
 
+	app.Config.loadConfiguration()
+
+	if app.Config.EnableSigHUPReload {
+		app.listenSigHUPReloadConfig()
+	}
+
 	return app.onStartCallBack()
+}
+
+func (app *AppServer) listenSigHUPReloadConfig() {
+	app.Log.Info("Listening for SIGHUP signal to reload configuration.")
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGHUP)
+
+	go func() {
+		for sig := range sigs {
+			app.Log.Infof("SIGHUP(%s) received, reloading configuration", sig)
+			app.Config.loadConfiguration()
+
+			// if sighup reload has been disabled by this reload, close the event listener
+			if !app.Config.EnableSigHUPReload {
+				close(sigs)
+			}
+		}
+	}()
 }
