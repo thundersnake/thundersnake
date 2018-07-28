@@ -4,62 +4,63 @@ variables:
   REPO_NAME: gitlab.com/thundersnake/thundersnake
 
 before_script:
-- go version
-- ./ci/before_script.sh
-- cd $GOPATH/src/$REPO_NAME
+  - go version
+  - ./ci/before_script.sh
+  - cd $GOPATH/src/$REPO_NAME
 
 stages:
-- test
-- documentation
+  - test
+  - documentation
+  - deploy
 
 test:unittests:
   stage: test
   before_script:
-  - ./ci/before_script.sh
-  - cd $GOPATH/src/$REPO_NAME
+    - ./ci/before_script.sh
+    - cd $GOPATH/src/$REPO_NAME
   script:
-  - make test
+    - make test
 
 test:lint:
   stage: test
   script:
-  - make lint
+    - make lint
 
 test:race:
   stage: test
   script:
-  - make race
+    - make race
 
 test:msan:
   stage: test
   script:
-  - make msan
+    - make msan
 
 doc:coverage:
   stage: documentation
   script:
-  - ./ci/before_script.sh
-  - cd $GOPATH/src/$REPO_NAME
-  - ./ci/coverage.sh
+    - ./ci/before_script.sh
+    - cd $GOPATH/src/$REPO_NAME
+    - ./ci/coverage.sh
   artifacts:
     when: on_success
     expire_in: 1 day
     paths:
-    - artifacts/coverage.html
+      - artifacts/coverage.html
 
 pages:
   stage: deploy
   only:
-  - master
+    - master
   dependencies:
-  - doc:coverage
+    - doc:coverage
   script:
-  # At the beginning we are in go package path, not in CI_PROJECT_DIR
-  - mkdir -p $CI_PROJECT_DIR/public/
-  - cp artifacts/coverage.html $CI_PROJECT_DIR/public/
+    # At the beginning we are in go package path, not in CI_PROJECT_DIR
+    - mkdir -p $CI_PROJECT_DIR/public/
+    - cp artifacts/coverage.html $CI_PROJECT_DIR/public/
   artifacts:
     when: on_success
     expire_in: 10 year
     paths:
-    - public
+      - public
 
