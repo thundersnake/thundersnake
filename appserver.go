@@ -36,11 +36,6 @@ func NewAppServer(appName string, configPath string, onStartCallBack func() erro
 		return nil
 	}
 
-	if len(configPath) == 0 {
-		a.Log.Errorf("[%s] configPath not defined, cannot create AppServer.", AppServerName)
-		return nil
-	}
-
 	if a.onStartCallBack == nil {
 		a.Log.Errorf("[%s] onStartCallback not defined, cannot create AppServer.", AppServerName)
 		return nil

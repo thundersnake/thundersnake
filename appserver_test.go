@@ -14,7 +14,7 @@ func testCallback() error {
 
 func TestNewAppServer(t *testing.T) {
 	assert.Nil(t, NewAppServer("", "test.yml", testCallback))
-	assert.Nil(t, NewAppServer("tests", "", testCallback))
+	assert.NotNil(t, NewAppServer("tests", "", testCallback))
 	assert.Nil(t, NewAppServer("tests", "test.yml", nil))
 	assert.Nil(t, NewAppServer("tests", "", nil))
 	assert.Nil(t, NewAppServer("", "test.yml", nil))
