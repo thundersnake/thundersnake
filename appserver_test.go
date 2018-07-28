@@ -27,7 +27,7 @@ func TestNewAppServer(t *testing.T) {
 }
 
 func TestAppServer_Start(t *testing.T) {
-	app := NewAppServer("tests", "test.yml", testCallback)
+	app := NewAppServer("tests", "", testCallback)
 	// Ignore later tests in that case, and don't do any tests, it's handled by TestNewAppServer
 	if app == nil {
 		return

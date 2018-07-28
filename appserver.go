@@ -21,7 +21,7 @@ type AppServer struct {
 	configPath      string
 	logManager      *LogManager
 	Log             *logging.Logger
-	Config          Config
+	Config          *Config
 	onStartCallBack func() error
 }
 
@@ -45,6 +45,10 @@ func NewAppServer(appName string, configPath string, onStartCallBack func() erro
 	if a.onStartCallBack == nil {
 		a.Log.Errorf("[%s] onStartCallback not defined, cannot create AppServer.", AppServerName)
 		return nil
+	}
+
+	a.Config = &Config{
+		path: configPath,
 	}
 
 	return a
