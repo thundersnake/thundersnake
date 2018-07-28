@@ -14,6 +14,7 @@ var AppServerVersion = "[unk]"
 // AppServerName application server name
 var AppServerName = "ThunderSnake"
 
+// AppServer application server object
 type AppServer struct {
 	name            string
 	version         string
@@ -25,6 +26,7 @@ type AppServer struct {
 	onStartCallBack func() error
 }
 
+// NewAppServer creates AppServer object if basic prerequisites are satisfied
 func NewAppServer(appName string, configPath string, onStartCallBack func() error) *AppServer {
 	a := &AppServer{
 		name:            appName,
@@ -54,8 +56,10 @@ func NewAppServer(appName string, configPath string, onStartCallBack func() erro
 	return a
 }
 
+// Start starts the AppServer
+// It will load the configuration, enable AppServer utils & run the onStartCallback function
 func (app *AppServer) Start() error {
-	app.logManager.Start()
+	app.logManager.start()
 
 	app.Log.Infof("Starting %s version %s (%s/%s).", app.name, app.version, AppServerName, AppServerVersion)
 	app.Log.Infof("Build date: %s.", app.buildDate)

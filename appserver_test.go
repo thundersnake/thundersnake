@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var testCallBackOk bool = false
+var testCallBackOk = false
 
 func testCallback() error {
 	testCallBackOk = true

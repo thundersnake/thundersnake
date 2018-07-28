@@ -5,12 +5,15 @@ import (
 	"io/ioutil"
 )
 
+// Config AppServer configuration object
 type Config struct {
 	EnableSigHUPReload bool         `yaml:"enable-sighup-reload"`
 	Custom             CustomConfig `yaml:"custom"`
 	path               string
 }
 
+// CustomConfig interface permitting to plug a specific configuration object
+// for end users apps
 type CustomConfig interface {
 	loadDefaults()
 }
