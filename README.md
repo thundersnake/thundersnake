@@ -55,3 +55,18 @@ func (c *myConfig) loadDefaults() {
 	c.bar = "test"
 }
 ```
+
+Then overwrite the CustomConfig function in your main app just after creating application server.
+
+```go
+var GConfig myConfig
+
+func main() {
+	configFile := "/etc/myapp/myapp.yml"
+	appServer = thundersnake.NewAppServer(AppName, configFile, onStart)
+	appServer.Config.Custom = &GConfig
+	if appServer != nil {
+		appServer.Start()
+	}
+}
+```
