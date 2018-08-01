@@ -2,6 +2,7 @@ package thundersnake
 
 import (
 	"github.com/op/go-logging"
+	"github.com/pborman/getopt/v2"
 	"gitlab.com/thundersnake/thundersnake/utils"
 	"os"
 	"os/signal"
@@ -19,7 +20,6 @@ type AppServer struct {
 	name            string
 	version         string
 	buildDate       string
-	configPath      string
 	logManager      *LogManager
 	Log             *logging.Logger
 	Config          *Config
@@ -27,33 +27,34 @@ type AppServer struct {
 }
 
 // NewAppServer creates AppServer object if basic prerequisites are satisfied
-func NewAppServer(appName string, configPath string, onStartCallBack func() error) *AppServer {
-	a := &AppServer{
+func NewAppServer(appName string, onConfigFlagInitCallback func(), onStartCallBack func() error) *AppServer {
+	app := &AppServer{
 		name:            appName,
-		configPath:      configPath,
 		logManager:      NewLogManager(appName),
 		onStartCallBack: onStartCallBack,
 		version:         "[unk]",
 		buildDate:       "[unk]",
 	}
 
-	a.Log = a.logManager.Log
+	app.Log = app.logManager.Log
 
 	if len(appName) == 0 {
-		a.Log.Errorf("[%s] appName not defined, cannot create AppServer.", AppServerName)
+		app.Log.Errorf("[%s] appName not defined, cannot create AppServer.", AppServerName)
 		return nil
 	}
 
-	if a.onStartCallBack == nil {
-		a.Log.Errorf("[%s] onStartCallback not defined, cannot create AppServer.", AppServerName)
+	if app.onStartCallBack == nil {
+		app.Log.Errorf("[%s] onStartCallback not defined, cannot create AppServer.", AppServerName)
 		return nil
 	}
 
-	a.Config = &Config{
-		path: configPath,
-	}
+	app.Config = &Config{}
 
-	return a
+	getopt.FlagLong(&app.Config.path, "config", 'c', "Configuration file")
+	if onConfigFlagInitCallback != nil {
+		onConfigFlagInitCallback()
+	}
+	return app
 }
 
 // Start starts the AppServer
@@ -66,6 +67,8 @@ func (app *AppServer) Start() error {
 	if utils.IsInDocker() {
 		app.Log.Infof("Application is running in a Docker container.")
 	}
+
+	getopt.Parse()
 
 	app.Config.loadConfiguration()
 
