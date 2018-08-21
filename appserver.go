@@ -78,6 +78,8 @@ func (app *AppServer) Start() error {
 		app.Log.Info("Configuration reload on SIGHUP is disabled.")
 	}
 
+	app.Log.Infof("Application node ID: %s", app.Config.NodeName)
+
 	ret := app.onStartCallBack()
 	app.Log.Infof("Exiting %s", app.name)
 	return ret
