@@ -1,15 +1,23 @@
 package thundersnake
 
 import (
+	"fmt"
+	"gitlab.com/thundersnake/thundersnake/utils"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
+	"strconv"
 )
 
 // Config AppServer configuration object
 type Config struct {
-	EnableSigHUPReload bool         `yaml:"enable-sighup-reload"`
-	Custom             CustomConfig `yaml:"custom"`
-	path               string
+	EnableSigHUPReload bool   `yaml:"enable-sighup-reload"`
+	NodeName           string `yaml:"node-name"`
+	HTTP               struct {
+		Port int `yaml:"port"`
+	} `yaml:"http"`
+	Custom CustomConfig `yaml:"custom"`
+	path   string
 }
 
 // CustomConfig interface permitting to plug a specific configuration object
@@ -20,7 +28,34 @@ type CustomConfig interface {
 
 func (c *Config) loadDefaults() {
 	// Place default appserver configurations here
-	c.EnableSigHUPReload = true
+	sigHupReload := os.Getenv("SIGHUP_RELOAD")
+	if len(sigHupReload) > 0 {
+		sigHupReloadTmp, err := strconv.Atoi(sigHupReload)
+		if err != nil {
+			gLog.Fatalf("SIGHUP_RELOAD environment variable is not an integer. Please fix it.")
+		}
+		c.EnableSigHUPReload = sigHupReloadTmp > 0
+	} else {
+		c.EnableSigHUPReload = true
+	}
+
+	nodeName := os.Getenv("NODE_NAME")
+	if len(nodeName) > 0 {
+		c.NodeName = nodeName
+	} else {
+		c.NodeName = fmt.Sprintf("node-%s", utils.AlphaNumString(8))
+	}
+
+	httpPort := os.Getenv("HTTP_PORT")
+	if len(httpPort) > 0 {
+		var err error
+		c.HTTP.Port, err = strconv.Atoi(httpPort)
+		if err != nil {
+			gLog.Fatalf("HTTP port must be an integer")
+		}
+	} else {
+		c.HTTP.Port = 8080
+	}
 
 	// then load custom configuration defaults if any
 	if c.Custom != nil {
