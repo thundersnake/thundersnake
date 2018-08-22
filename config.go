@@ -68,6 +68,18 @@ func (c *Config) loadDefaults() {
 		c.HTTP.EnableAccessLogs = true
 	}
 
+	httpEnableHealthEndpoint := os.Getenv("HTTP_ENABLE_HEALTH_ENDPOINT")
+	if len(httpEnableHealthEndpoint) > 0 {
+		ehe, err := strconv.Atoi(httpEnableHealthEndpoint)
+		if err != nil || ehe < 0 {
+			gLog.Fatalf("HTTP enable health endpoint must be an integer, greater or equal to zero.")
+		}
+
+		c.HTTP.EnableHealthEndpoint = ehe > 0
+	} else {
+		c.HTTP.EnableHealthEndpoint = true
+	}
+
 	// then load custom configuration defaults if any
 	if c.Custom != nil {
 		c.Custom.loadDefaults()

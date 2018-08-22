@@ -3,6 +3,7 @@ package thundersnake
 import (
 	"github.com/op/go-logging"
 	"github.com/pborman/getopt/v2"
+	"gitlab.com/thundersnake/thundersnake/httpserver"
 	"gitlab.com/thundersnake/thundersnake/utils"
 	"os"
 	"os/signal"
@@ -24,6 +25,7 @@ type AppServer struct {
 	Log             *logging.Logger
 	Config          *Config
 	onStartCallBack func() error
+	HTTP            *httpserver.HTTPServer
 }
 
 // NewAppServer creates AppServer object if basic prerequisites are satisfied
@@ -79,6 +81,10 @@ func (app *AppServer) Start() error {
 	}
 
 	app.Log.Infof("Application node ID: %s", app.Config.NodeName)
+
+	if app.Config.HTTP.Port > 0 {
+		app.HTTP = httpserver.New(app.Log, app.Config.HTTP)
+	}
 
 	ret := app.onStartCallBack()
 	app.Log.Infof("Exiting %s", app.name)

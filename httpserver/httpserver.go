@@ -40,6 +40,10 @@ func (h *HTTPServer) Start() {
 		h.onStartCallback(h.e)
 	}
 
+	if h.cfg.EnableHealthEndpoint {
+		h.e.GET("/health", httpHealthCheck)
+	}
+
 	h.log.Errorf("HTTP server error: %s",
 		h.e.Start(fmt.Sprintf(":%d", h.cfg.Port)),
 	)
