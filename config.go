@@ -2,6 +2,7 @@ package thundersnake
 
 import (
 	"fmt"
+	"gitlab.com/thundersnake/thundersnake/httpserver"
 	"gitlab.com/thundersnake/thundersnake/utils"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -11,13 +12,11 @@ import (
 
 // Config AppServer configuration object
 type Config struct {
-	EnableSigHUPReload bool   `yaml:"enable-sighup-reload"`
-	NodeName           string `yaml:"node-name"`
-	HTTP               struct {
-		Port int `yaml:"port"`
-	} `yaml:"http"`
-	Custom CustomConfig `yaml:"custom"`
-	path   string
+	EnableSigHUPReload bool              `yaml:"enable-sighup-reload"`
+	NodeName           string            `yaml:"node-name"`
+	HTTP               httpserver.Config `yaml:"http"`
+	Custom             CustomConfig      `yaml:"custom"`
+	path               string
 }
 
 // CustomConfig interface permitting to plug a specific configuration object
@@ -55,6 +54,18 @@ func (c *Config) loadDefaults() {
 		}
 	} else {
 		c.HTTP.Port = 8080
+	}
+
+	httpEnableAccessLogs := os.Getenv("HTTP_ENABLE_ACCESS_LOGS")
+	if len(httpEnableAccessLogs) > 0 {
+		eal, err := strconv.Atoi(httpEnableAccessLogs)
+		if err != nil || eal < 0 {
+			gLog.Fatalf("HTTP enable access logs must be an integer, greater or equal to zero.")
+		}
+
+		c.HTTP.EnableAccessLogs = eal > 0
+	} else {
+		c.HTTP.EnableAccessLogs = true
 	}
 
 	// then load custom configuration defaults if any
