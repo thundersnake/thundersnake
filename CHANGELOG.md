@@ -1,5 +1,11 @@
 # Thundersnake changelog
 
+## 0.5.0
+
+Add new features:
+
+* labstack/echo HTTP server
+
 ## 0.4.0
 
 Add new features:
