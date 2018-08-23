@@ -2,6 +2,8 @@ package thundersnake
 
 import (
 	"github.com/op/go-logging"
+	"github.com/pborman/getopt/v2"
+	"gitlab.com/thundersnake/thundersnake/httpserver"
 	"gitlab.com/thundersnake/thundersnake/utils"
 	"os"
 	"os/signal"
@@ -14,48 +16,53 @@ var AppServerVersion = "[unk]"
 // AppServerName application server name
 var AppServerName = "ThunderSnake"
 
+// AppServer application server object
 type AppServer struct {
 	name            string
 	version         string
 	buildDate       string
-	configPath      string
 	logManager      *LogManager
 	Log             *logging.Logger
 	Config          *Config
 	onStartCallBack func() error
+	HTTP            *httpserver.HTTPServer
 }
 
-func NewAppServer(appName string, configPath string, onStartCallBack func() error) *AppServer {
-	a := &AppServer{
+// NewAppServer creates AppServer object if basic prerequisites are satisfied
+func NewAppServer(appName string, onConfigFlagInitCallback func(), onStartCallBack func() error) *AppServer {
+	app := &AppServer{
 		name:            appName,
-		configPath:      configPath,
 		logManager:      NewLogManager(appName),
 		onStartCallBack: onStartCallBack,
 		version:         "[unk]",
 		buildDate:       "[unk]",
 	}
 
-	a.Log = a.logManager.Log
+	app.Log = app.logManager.Log
 
 	if len(appName) == 0 {
-		a.Log.Errorf("[%s] appName not defined, cannot create AppServer.", AppServerName)
+		app.Log.Errorf("[%s] appName not defined, cannot create AppServer.", AppServerName)
 		return nil
 	}
 
-	if a.onStartCallBack == nil {
-		a.Log.Errorf("[%s] onStartCallback not defined, cannot create AppServer.", AppServerName)
+	if app.onStartCallBack == nil {
+		app.Log.Errorf("[%s] onStartCallback not defined, cannot create AppServer.", AppServerName)
 		return nil
 	}
 
-	a.Config = &Config{
-		path: configPath,
-	}
+	app.Config = &Config{}
 
-	return a
+	getopt.FlagLong(&app.Config.path, "config", 'c', "Configuration file")
+	if onConfigFlagInitCallback != nil {
+		onConfigFlagInitCallback()
+	}
+	return app
 }
 
+// Start starts the AppServer
+// It will load the configuration, enable AppServer utils & run the onStartCallback function
 func (app *AppServer) Start() error {
-	app.logManager.Start()
+	app.logManager.start()
 
 	app.Log.Infof("Starting %s version %s (%s/%s).", app.name, app.version, AppServerName, AppServerVersion)
 	app.Log.Infof("Build date: %s.", app.buildDate)
@@ -63,12 +70,20 @@ func (app *AppServer) Start() error {
 		app.Log.Infof("Application is running in a Docker container.")
 	}
 
+	getopt.Parse()
+
 	app.Config.loadConfiguration()
 
 	if app.Config.EnableSigHUPReload {
 		app.listenSigHUPReloadConfig()
 	} else {
 		app.Log.Info("Configuration reload on SIGHUP is disabled.")
+	}
+
+	app.Log.Infof("Application node ID: %s", app.Config.NodeName)
+
+	if app.Config.HTTP.Port > 0 {
+		app.HTTP = httpserver.New(app.Log, app.Config.HTTP)
 	}
 
 	ret := app.onStartCallBack()

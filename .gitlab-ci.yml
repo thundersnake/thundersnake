@@ -31,11 +31,6 @@ test:race:
   script:
     - make race
 
-test:msan:
-  stage: test
-  script:
-    - make msan
-
 doc:coverage:
   stage: documentation
   script:
@@ -52,6 +47,7 @@ pages:
   stage: deploy
   only:
     - master
+    - develop
   dependencies:
     - doc:coverage
   script:

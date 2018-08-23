@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// LogManager AppServer logging manager object
 type LogManager struct {
 	name string
 	fmt  logging.Formatter
@@ -15,7 +16,7 @@ type LogManager struct {
 // Global singleton for the library
 var gLog *logging.Logger
 
-// InitLogger initialize logger
+// NewLogManager initialize logger
 func NewLogManager(name string) *LogManager {
 	l := &LogManager{
 		name: name,
@@ -30,7 +31,7 @@ func NewLogManager(name string) *LogManager {
 	return l
 }
 
-func (l *LogManager) Start() {
+func (l *LogManager) start() {
 	// @TODO use a configuration file
 	l.addSyslogBackend()
 }
