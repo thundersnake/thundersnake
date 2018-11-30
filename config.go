@@ -22,7 +22,7 @@ type Config struct {
 // CustomConfig interface permitting to plug a specific configuration object
 // for end users apps
 type CustomConfig interface {
-	loadDefaults()
+	LoadDefaults()
 }
 
 func (c *Config) loadDefaults() {
@@ -82,7 +82,7 @@ func (c *Config) loadDefaults() {
 
 	// then load custom configuration defaults if any
 	if c.Custom != nil {
-		c.Custom.loadDefaults()
+		c.Custom.LoadDefaults()
 	}
 }
 
